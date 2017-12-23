@@ -6,6 +6,7 @@
 
 double m = 2.99 / ( PH_700_VOLTAGE - PH_401_VOLTAGE);
 double b = 7 - ( m * PH_700_VOLTAGE );
+int buf[10],temp;
 
 void setup() {
   Serial.begin(9600);
@@ -16,9 +17,37 @@ void setup() {
 
 void loop() {
 
-  double value = analogRead(PH_SENSOR_PIN);
-  double voltage = value * 5.0/ 1024.0;
+//  double value = analogRead(PH_SENSOR_PIN);
+//  double voltage = value * 5.0/ 1024.0;
+
+  // read 10 values 
+  for(int i = 0; i < 10; i++) {
+    buf[i] = analogRead(PH_SENSOR_PIN);
+    delay(10);
+  }
+
+  // sort
+  for(int i = 0; i < 9; i++) {
+    for(int j = i + 1; j < 10; j++) {
+      if(buf[i] > buf[j]) {
+        temp = buf[i];
+        buf[i] = buf[j];
+        buf[j] = temp;
+      }
+    }
+  }
+
+  // average and drop head and tail
+  double avgValue = 0;
+  for(int i = 2; i < 8; i++) {
+    avgValue += buf[i];
+  }
+
+  avgValue = avgValue / 6;
+  double voltage = avgValue * 5 / 1024;
+
   double pH = (m * voltage) + b;
+  
   Serial.print("voltage = ");
   Serial.print(voltage, 4);
   Serial.print("\t pH = ");
