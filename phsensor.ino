@@ -1,11 +1,21 @@
 #include <Adafruit_Sensor.h>
 #include <DHT.h>
+#include <OneWire.h> 
+#include <DallasTemperature.h>
+#include <TM1637Display.h>
+
 
 #define PH_401_VOLTAGE 3.00
 #define PH_700_VOLTAGE 2.20
 #define PH_SENSOR_PIN A0
 #define DHT_PIN 13
 #define DHT_TYPE DHT11
+#define ONE_WIRE_BUS 2 
+#define READ_FREQUENCY_MS 60000
+
+OneWire oneWire(ONE_WIRE_BUS); 
+DallasTemperature waterTempSensor(&oneWire);
+
 
 double m = 2.99 / ( PH_700_VOLTAGE - PH_401_VOLTAGE);
 double b = 7 - ( m * PH_700_VOLTAGE );
@@ -16,6 +26,7 @@ void setup() {
   Serial.begin(9600);
   pinMode(PH_SENSOR_PIN, INPUT);
   dht.begin();
+  waterTempSensor.begin(); 
 }
 
 void readPH() {
@@ -63,10 +74,17 @@ void readTemp() {
   Serial.print(h);
 }
 
+void readWaterTemp() {
+  float temp = waterTempSensor.getTempCByIndex(0);
+  Serial.print("\t watertemp =");
+  Serial.print(temp);
+}
+
 void loop() {
   readPH();
   Serial.print("\t");
   readTemp();
+  readWaterTemp();
   Serial.print("\n");
-  delay(1000);
+  delay(READ_FREQUENCY_MS);
 }
